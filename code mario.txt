@@ -1,0 +1,519 @@
+_init.py_
+__author__ = 'justinarmstrong'
+
+
+constants.py
+
+__author__ = 'justinarmstrong'
+
+SCREEN_HEIGHT = 600
+SCREEN_WIDTH = 800
+
+SCREEN_SIZE = (SCREEN_WIDTH,SCREEN_HEIGHT)
+
+ORIGINAL_CAPTION = "Super Mario Bros 1-1"
+
+## COLORS ##
+
+#            R    G    B
+GRAY         = (100, 100, 100)
+NAVYBLUE     = ( 60,  60, 100)
+WHITE        = (255, 255, 255)
+RED          = (255,   0,   0)
+GREEN        = (  0, 255,   0)
+FOREST_GREEN = ( 31, 162,  35)
+BLUE         = (  0,   0, 255)
+SKY_BLUE     = ( 39, 145, 251)
+YELLOW       = (255, 255,   0)
+ORANGE       = (255, 128,   0)
+PURPLE       = (255,   0, 255)
+CYAN         = (  0, 255, 255)
+BLACK        = (  0,   0,   0)
+NEAR_BLACK    = ( 19,  15,  48)
+COMBLUE      = (233, 232, 255)
+GOLD         = (255, 215,   0)
+
+BGCOLOR = WHITE
+
+SIZE_MULTIPLIER = 2.5
+BRICK_SIZE_MULTIPLIER = 2.69
+BACKGROUND_MULTIPLER = 2.679
+GROUND_HEIGHT = SCREEN_HEIGHT - 62
+
+#MARIO FORCES
+WALK_ACCEL = .15
+RUN_ACCEL = 20
+SMALL_TURNAROUND = .35
+
+GRAVITY = 1.01
+JUMP_GRAVITY = .31
+JUMP_VEL = -10
+FAST_JUMP_VEL = -12.5
+MAX_Y_VEL = 11
+
+MAX_RUN_SPEED = 800
+MAX_WALK_SPEED = 6
+
+
+#Mario States
+
+STAND = 'standing'
+WALK = 'walk'
+JUMP = 'jump'
+FALL = 'fall'
+SMALL_TO_BIG = 'small to big'
+BIG_TO_FIRE = 'big to fire'
+BIG_TO_SMALL = 'big to small'
+FLAGPOLE = 'flag pole'
+WALKING_TO_CASTLE = 'walking to castle'
+END_OF_LEVEL_FALL = 'end of level fall'
+
+
+#GOOMBA Stuff
+
+LEFT = 'left'
+RIGHT = 'right'
+JUMPED_ON = 'jumped on'
+DEATH_JUMP = 'death jump'
+
+#KOOPA STUFF
+
+SHELL_SLIDE = 'shell slide'
+
+#BRICK STATES
+
+RESTING = 'resting'
+BUMPED = 'bumped'
+
+#COIN STATES
+OPENED = 'opened'
+
+#MUSHROOM STATES
+
+REVEAL = 'reveal'
+SLIDE = 'slide'
+
+#COIN STATES
+
+SPIN = 'spin'
+
+#STAR STATES
+
+BOUNCE = 'bounce'
+
+#FIRE STATES
+
+FLYING = 'flying'
+BOUNCING = 'bouncing'
+EXPLODING = 'exploding'
+
+#Brick and coin box contents
+
+MUSHROOM = 'mushroom'
+STAR = 'star'
+FIREFLOWER = 'fireflower'
+SIXCOINS = '6coins'
+COIN = 'coin'
+LIFE_MUSHROOM = '1up_mushroom'
+
+FIREBALL = 'fireball'
+
+#LIST of ENEMIES
+
+GOOMBA = 'goomba'
+KOOPA = 'koopa'
+
+#LEVEL STATES
+
+FROZEN = 'frozen'
+NOT_FROZEN = 'not frozen'
+IN_CASTLE = 'in castle'
+FLAG_AND_FIREWORKS = 'flag and fireworks'
+
+#FLAG STATE
+TOP_OF_POLE = 'top of pole'
+SLIDE_DOWN = 'slide down'
+BOTTOM_OF_POLE = 'bottom of pole'
+
+#1UP score
+ONEUP = '379'
+
+#MAIN MENU CURSOR STATES
+PLAYER1 = '1 player'
+PLAYER2 = '2 player'
+
+#OVERHEAD INFO STATES
+MAIN_MENU = 'main menu'
+LOAD_SCREEN = 'loading screen'
+LEVEL = 'level'
+GAME_OVER = 'game over'
+FAST_COUNT_DOWN = 'fast count down'
+END_OF_LEVEL = 'end of level'
+
+
+#GAME INFO DICTIONARY KEYS
+COIN_TOTAL = 'coin total'
+SCORE = 'score'
+TOP_SCORE = 'top score'
+LIVES = 'lives'
+CURRENT_TIME = 'current time'
+LEVEL_STATE = 'level state'
+CAMERA_START_X = 'camera start x'
+MARIO_DEAD = 'mario dead'
+
+#STATES FOR ENTIRE GAME
+MAIN_MENU = 'main menu'
+LOAD_SCREEN = 'load screen'
+TIME_OUT = 'time out'
+GAME_OVER = 'game over'
+LEVEL1 = 'level1'
+
+#SOUND STATEZ
+NORMAL = 'normal'
+STAGE_CLEAR = 'stage clear'
+WORLD_CLEAR = 'world clear'
+TIME_WARNING = 'time warning'
+SPED_UP_NORMAL = 'sped up normal'
+MARIO_INVINCIBLE = 'mario invincible'
+
+
+game_souund.py
+
+__author__ = 'justinarmstrong'
+
+import pygame as pg
+from . import setup
+from . import constants as c
+
+class Sound(object):
+    """Handles all sound for the game"""
+    def __init__(self, overhead_info):
+        """Initialize the class"""
+        self.sfx_dict = setup.SFX
+        self.music_dict = setup.MUSIC
+        self.overhead_info = overhead_info
+        self.game_info = overhead_info.game_info
+        self.set_music_mixer()
+
+
+
+    def set_music_mixer(self):
+        """Sets music for level"""
+        if self.overhead_info.state == c.LEVEL:
+            pg.mixer.music.load(self.music_dict['main_theme'])
+            pg.mixer.music.play()
+            self.state = c.NORMAL
+        elif self.overhead_info.state == c.GAME_OVER:
+            pg.mixer.music.load(self.music_dict['game_over'])
+            pg.mixer.music.play()
+            self.state = c.GAME_OVER
+
+
+    def update(self, game_info, mario):
+        """Updates sound object with game info"""
+        self.game_info = game_info
+        self.mario = mario
+        self.handle_state()
+
+    def  handle_state(self):
+        """Handles the state of the soundn object"""
+        if self.state == c.NORMAL:
+            if self.mario.dead:
+                self.play_music('death', c.MARIO_DEAD)
+            elif self.mario.invincible \
+                    and self.mario.losing_invincibility == False:
+                self.play_music('invincible', c.MARIO_INVINCIBLE)
+            elif self.mario.state == c.FLAGPOLE:
+                self.play_music('flagpole', c.FLAGPOLE)
+            elif self.overhead_info.time == 100:
+                self.play_music('out_of_time', c.TIME_WARNING)
+
+
+        elif self.state == c.FLAGPOLE:
+            if self.mario.state == c.WALKING_TO_CASTLE:
+                self.play_music('stage_clear', c.STAGE_CLEAR)
+
+        elif self.state == c.STAGE_CLEAR:
+            if self.mario.in_castle:
+                self.sfx_dict['count_down'].play()
+                self.state = c.FAST_COUNT_DOWN
+
+        elif self.state == c.FAST_COUNT_DOWN:
+            if self.overhead_info.time == 0:
+                self.sfx_dict['count_down'].stop()
+                self.state = c.WORLD_CLEAR
+
+        elif self.state == c. TIME_WARNING:
+            if pg.mixer.music.get_busy() == 0:
+                self.play_music('main_theme_sped_up', c.SPED_UP_NORMAL)
+            elif self.mario.dead:
+                self.play_music('death', c.MARIO_DEAD)
+
+        elif self.state == c.SPED_UP_NORMAL:
+            if self.mario.dead:
+                self.play_music('death', c.MARIO_DEAD)
+            elif self.mario.state == c.FLAGPOLE:
+                self.play_music('flagpole', c.FLAGPOLE)
+
+        elif self.state == c.MARIO_INVINCIBLE:
+            if (self.mario.current_time - self.mario.invincible_start_timer) > 11000:
+                self.play_music('main_theme', c.NORMAL)
+            elif self.mario.dead:
+                self.play_music('death', c.MARIO_DEAD)
+
+
+        elif self.state == c.WORLD_CLEAR:
+            pass
+        elif self.state == c.MARIO_DEAD:
+            pass
+        elif self.state == c.GAME_OVER:
+            pass
+
+    def play_music(self, key, state):
+        """Plays new music"""
+        pg.mixer.music.load(self.music_dict[key])
+        pg.mixer.music.play()
+        self.state = state
+
+    def stop_music(self):
+        """Stops playback"""
+        pg.mixer.music.stop()
+
+
+main.py
+
+__author__ = 'justinarmstrong'
+
+from . import setup,tools
+from .states import main_menu,load_screen,level1
+from . import constants as c
+
+
+def main():
+    """Add states to control here."""
+    run_it = tools.Control(setup.ORIGINAL_CAPTION)
+    state_dict = {c.MAIN_MENU: main_menu.Menu(),
+                  c.LOAD_SCREEN: load_screen.LoadScreen(),
+                  c.TIME_OUT: load_screen.TimeOut(),
+                  c.GAME_OVER: load_screen.GameOver(),
+                  c.LEVEL1: level1.Level1()}
+
+    run_it.setup_states(state_dict, c.MAIN_MENU)
+    run_it.main()
+
+setup.py
+
+__author__ = 'justinarmstrong'
+
+"""
+This module initializes the display and creates dictionaries of resources.
+"""
+
+import os
+import pygame as pg
+from . import tools
+from .import constants as c
+
+ORIGINAL_CAPTION = c.ORIGINAL_CAPTION
+
+
+os.environ['SDL_VIDEO_CENTERED'] = '1'
+pg.init()
+pg.event.set_allowed([pg.KEYDOWN, pg.KEYUP, pg.QUIT])
+pg.display.set_caption(c.ORIGINAL_CAPTION)
+SCREEN = pg.display.set_mode(c.SCREEN_SIZE)
+SCREEN_RECT = SCREEN.get_rect()
+
+
+FONTS = tools.load_all_fonts(os.path.join("resources","fonts"))
+MUSIC = tools.load_all_music(os.path.join("resources","music"))
+GFX   = tools.load_all_gfx(os.path.join("resources","graphics"))
+SFX   = tools.load_all_sfx(os.path.join("resources","sound"))
+
+tools.py
+
+__author__ = 'justinarmstrong'
+
+import os
+import pygame as pg
+
+keybinding = {
+    'action':pg.K_s,
+    'jump':pg.K_SPACE,
+    'left':pg.K_LEFT,
+    'right':pg.K_RIGHT,
+    'down':pg.K_DOWN
+}
+
+class Control(object):
+    """Control class for entire project. Contains the game loop, and contains
+    the event_loop which passes events to States as needed. Logic for flipping
+    states is also found here."""
+    def __init__(self, caption):
+        self.screen = pg.display.get_surface()
+        self.done = False
+        self.clock = pg.time.Clock()
+        self.caption = caption
+        self.fps = 60
+        self.show_fps = False
+        self.current_time = 0.0
+        self.keys = pg.key.get_pressed()
+        self.state_dict = {}
+        self.state_name = None
+        self.state = None
+
+    def setup_states(self, state_dict, start_state):
+        self.state_dict = state_dict
+        self.state_name = start_state
+        self.state = self.state_dict[self.state_name]
+
+    def update(self):
+        self.current_time = pg.time.get_ticks()
+        if self.state.quit:
+            self.done = True
+        elif self.state.done:
+            self.flip_state()
+        self.state.update(self.screen, self.keys, self.current_time)
+
+    def flip_state(self):
+        previous, self.state_name = self.state_name, self.state.next
+        persist = self.state.cleanup()
+        self.state = self.state_dict[self.state_name]
+        self.state.startup(self.current_time, persist)
+        self.state.previous = previous
+
+
+    def event_loop(self):
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                self.done = True
+            elif event.type == pg.KEYDOWN:
+                self.keys = pg.key.get_pressed()
+                self.toggle_show_fps(event.key)
+            elif event.type == pg.KEYUP:
+                self.keys = pg.key.get_pressed()
+            self.state.get_event(event)
+
+
+    def toggle_show_fps(self, key):
+        if key == pg.K_F5:
+            self.show_fps = not self.show_fps
+            if not self.show_fps:
+                pg.display.set_caption(self.caption)
+
+
+    def main(self):
+        """Main loop for entire program"""
+        while not self.done:
+            self.event_loop()
+            self.update()
+            pg.display.update()
+            self.clock.tick(self.fps)
+            if self.show_fps:
+                fps = self.clock.get_fps()
+                with_fps = "{} - {:.2f} FPS".format(self.caption, fps)
+                pg.display.set_caption(with_fps)
+
+
+class _State(object):
+    def __init__(self):
+        self.start_time = 0.0
+        self.current_time = 0.0
+        self.done = False
+        self.quit = False
+        self.next = None
+        self.previous = None
+        self.persist = {}
+
+    def get_event(self, event):
+        pass
+
+    def startup(self, current_time, persistant):
+        self.persist = persistant
+        self.start_time = current_time
+
+    def cleanup(self):
+        self.done = False
+        return self.persist
+
+    def update(self, surface, keys, current_time):
+        pass
+
+
+
+def load_all_gfx(directory, colorkey=(255,0,255), accept=('.png', 'jpg', 'bmp')):
+    graphics = {}
+    for pic in os.listdir(directory):
+        name, ext = os.path.splitext(pic)
+        if ext.lower() in accept:
+            img = pg.image.load(os.path.join(directory, pic))
+            if img.get_alpha():
+                img = img.convert_alpha()
+            else:
+                img = img.convert()
+                img.set_colorkey(colorkey)
+            graphics[name]=img
+    return graphics
+
+
+def load_all_music(directory, accept=('.wav', '.mp3', '.ogg', '.mdi')):
+    songs = {}
+    for song in os.listdir(directory):
+        name,ext = os.path.splitext(song)
+        if ext.lower() in accept:
+            songs[name] = os.path.join(directory, song)
+    return songs
+
+
+def load_all_fonts(directory, accept=('.ttf')):
+    return load_all_music(directory, accept)
+
+
+def load_all_sfx(directory, accept=('.wav','.mpe','.ogg','.mdi')):
+    effects = {}
+    for fx in os.listdir(directory):
+        name, ext = os.path.splitext(fx)
+        if ext.lower() in accept:
+            effects[name] = pg.mixer.Sound(os.path.join(directory, fx))
+    return effects
+
+
+
+mario.py
+
+
+#!/usr/bin/env python
+__author__ = 'justinarmstrong'
+
+"""
+This is an attempt to recreate the first level of
+Super Mario Bros for the NES.
+"""
+
+import sys
+import pygame as pg
+from data.main import main
+import cProfile
+
+
+if __name__=='__main__':
+    main()
+    pg.quit()
+    sys.exit()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
